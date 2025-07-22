@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyan Support Ratings Dashboard</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f4f6;
+      padding: 30px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .summary {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    .entry {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 600px;
+      box-shadow: 0 0 5px rgba(50,0,100,0.21);
+    }
+    .entry h3 {
+      margin: 0;
+    }
+    .entry .stars {
+      color: gold;
+      font-size: 18px;
+    }
+    .entry small {
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cyan Support - Rating Summary</h1>
+  <div class="summary" id="summary">Loading...</div>
+  <div id="entries"></div>
+
+  <script>
+    // Replace with your own jsonbin.io Bin ID and API Key
+    const BIN_ID = "685cbac98a456b7966b5cfaf";
+    const API_KEY = "$2a$10$x7VBgNRztww.OlDubg9dS.Q86N6zGeCi/6oSlWc3NE7wYYAW3deia";
+
+    fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: {
+        "X-Master-Key": API_KEY
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      const records = data.record.reverse(); // Show newest first
+      let total = 0;
+      const container = document.getElementById('entries');
+
+      if (records.length === 0) {
+        document.getElementById('summary').textContent = "No ratings yet.";
+        return;
+      }
+
+      records.forEach(entry => {
+        total += entry.rating;
+        const div = document.createElement('div');
+        div.className = "entry";
+        div.innerHTML = `
+          <h3>${entry.name || "Anonymous"}</h3>
+          <div class="stars">${'★'.repeat(entry.rating)}${'☆'.repeat(5 - entry.rating)}</div>
+          <p>${entry.feedback || "<i>No feedback provided</i>"}</p>
+          <small>${entry.time}</small>
+        `;
+        container.appendChild(div);
+      });
+
+      const avg = (total / records.length).toFixed(2);
+      document.getElementById('summary').textContent = 
+        `⭐ Average Rating: ${avg} / 5 from ${records.length} submission(s)`;
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('summary').textContent = "Failed to load data. Check API key or bin ID.";
+    });
+  </script>
+
+</body>
+</html>
